@@ -752,7 +752,7 @@
           <div id="intro-lottie"></div>
         </div>
         <div id="christmas-video-overlay" class="hidden">
-          <video id="christmas-video" src="./assets/Christmas.mp4" playsinline webkit-playsinline preload="auto"></video>
+          <video id="christmas-video" src="./assets/Halloween.mp4" playsinline webkit-playsinline preload="auto"></video>
         </div>
         <div id="complete-overlay" class="hidden">
           <div class="complete-card">
@@ -818,8 +818,7 @@
       document.body.appendChild(scanGuide);
     }
 
-    refreshNameBadge();
-    if (!state.childName && cameraPermissionGranted && cameraStarted) showNameGate(false);
+    if (nameBadge) nameBadge.classList.add('hidden');
   }
 
   function refreshNameBadge() {
@@ -911,8 +910,7 @@
     waitingForCameraReady = false;
     setPcTestButtonVisible(false);
     setCameraRetryVisible(false);
-    if (!state.childName) showNameGate(true);
-    else showPcTestPanel();
+    showPcTestPanel();
   }
 
   function startPcTestTarget(targetName) {
@@ -1052,13 +1050,9 @@
           cameraStarted = true;
           waitingForCameraReady = false;
           hideLoadingOverlay();
-          if (state.childName) {
-            showScanStatus();
-            setScanStatus('Scanning...');
-          } else {
-            hideScanStatus();
-            showNameGate(false);
-          }
+          if (nameGate) nameGate.classList.add('hidden');
+          showScanStatus();
+          setScanStatus('Scanning...');
         },
         listeners: [
           {
@@ -1074,7 +1068,7 @@
           {
             event: 'reality.imagelost',
             process: () => {
-              if (!state.experienceStarted) setScanStatus(state.childName ? 'Scanning...' : 'Set name first');
+              if (!state.experienceStarted) setScanStatus('Scanning...');
             },
           },
         ],
@@ -1311,26 +1305,19 @@
 
   function handleTargetFound(targetName) {
     if (!targetNames.includes(String(targetName))) return;
-    if (!state.childName) {
-      setScanStatus('Set name first');
-      showNameGate(true);
-      return;
-    }
     if (state.experienceStarted) return;
     startChristmasFlow(targetName);
   }
 
   function startChristmasFlow(targetName) {
-    console.log('[Christmas AR] start flow:', targetName);
-    const flowToken = ++state.flowToken;
+    console.log('[Halloween AR] target found:', targetName);
+    ++state.flowToken;
     state.experienceStarted = true;
-    state.postcardReady = false;
-    state.videoPlaying = false;
+    state.postcardReady = true;
     state.santaMode = 'hidden';
     state.santaTime = 0;
     hideScanStatus();
     hidePcTestPanel();
-    preloadPostcardLottie();
     postcardButton.classList.add('hidden');
     postcardButton.classList.remove('opening', 'lottie-done', 'lottie-visible', 'lottie-playing', 'lottie-intro-fade');
     resetPostcardLottie();
@@ -1340,12 +1327,7 @@
     santaCanvas.classList.remove('visible');
     if (santa) santa.visible = false;
 
-    speakIntro();
-
-    playIntroLottieOnce(() => {
-      if (!state.experienceStarted || state.flowToken !== flowToken) return;
-      finishSpeechStep({ cancelSpeech: false });
-    });
+    openPostcard();
   }
 
   function startSpeechWatchdog(timeoutMs) {
@@ -1675,7 +1657,9 @@
     state.videoPlaying = true;
     try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch {}
     postcardButton.classList.remove('opening');
-    await playPostcardLottieForward();
+    if (!postcardButton.classList.contains('hidden')) {
+      await playPostcardLottieForward();
+    }
     postcardButton.classList.add('hidden');
     santaCanvas.classList.remove('visible');
     if (santa) santa.visible = false;
@@ -1728,5 +1712,3 @@
   hideScanStatus();
   requestCameraPermissionGate(false);
 })();
-
-
