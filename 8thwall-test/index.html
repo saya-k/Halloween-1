@@ -1,7 +1,76 @@
-<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>World Effects</title><meta itemprop="name" content="World Effects"><meta name="twitter:title" content="World Effects"><meta property="og:title" content="World Effects"><meta property="og:site_name" content="World Effects"><meta name="description" content="This project demonstrates how to use World Effects to anchor virtual content to a flat surface."><meta itemprop="description" content="This project demonstrates how to use World Effects to anchor virtual content to a flat surface."><meta property="og:description" content="This project demonstrates how to use World Effects to anchor virtual content to a flat surface."><meta name="twitter:description" content="This project demonstrates how to use World Effects to anchor virtual content to a flat surface."><script crossorigin="anonymous" src="./external/runtime/runtime.js"></script><script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous" data-preload-chunks="slam,image-targets"></script><script src="https://cdn.jsdelivr.net/npm/@8thwall/landing-page@1/dist/landing-page.js" crossorigin="anonymous"></script><meta property="og:image" content="https://8thwall.org/studio-world-effects-example/assets/preview.png"></head><body><script src="image-target-config.js?v=postcard-fade-1s-20260722a"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <title>Halloween</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
 
+    video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
 
+    #tapToPlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      background: rgba(0, 0, 0, 0.001);
+      color: transparent;
+      font-size: 1px;
+    }
 
+    #tapToPlay.visible {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+  <video id="halloweenVideo" src="./assets/Halloween.mp4" autoplay muted playsinline webkit-playsinline preload="auto"></video>
+  <button id="tapToPlay" type="button" aria-label="Play video"></button>
 
+  <script>
+    const video = document.getElementById('halloweenVideo');
+    const tapToPlay = document.getElementById('tapToPlay');
 
+    async function playVideo({ withSound = false } = {}) {
+      if (withSound) video.muted = false;
+      try {
+        await video.play();
+        tapToPlay.classList.remove('visible');
+      } catch {
+        video.muted = true;
+        tapToPlay.classList.add('visible');
+      }
+    }
 
+    video.addEventListener('ended', () => {
+      if (Number.isFinite(video.duration) && video.duration > 0) {
+        video.currentTime = Math.max(video.duration - 0.04, 0);
+      }
+      video.pause();
+    });
+
+    tapToPlay.addEventListener('click', () => playVideo({ withSound: true }));
+    document.addEventListener('pointerdown', () => playVideo({ withSound: true }), { once: true });
+
+    playVideo();
+  </script>
+</body>
+</html>
